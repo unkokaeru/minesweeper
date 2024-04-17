@@ -9,19 +9,7 @@ from typing import List
 
 import pygame
 
-from cfg.constants import (
-    BOX_HEIGHT,
-    BOX_WIDTH,
-    DIFFICULTY_PERCENTAGES,
-    EMPTY_COLOUR,
-    FOG_COLOUR,
-    FONT_SIZE,
-    GAME_OVER_COLOUR,
-    TEXT_BACKGROUND_COLOUR,
-    TEXT_COLOUR,
-    WIN_COLOUR,
-    WINDOW_TITLE,
-)
+from cfg.constants import Constants
 
 
 class Minesweeper:
@@ -50,9 +38,10 @@ class Minesweeper:
 
         # Initialise the number of bombs
         self.difficulty = difficulty
-        if difficulty in DIFFICULTY_PERCENTAGES:
+        if difficulty in Constants.DIFFICULTY_PERCENTAGES:
             self.num_bombs = int(
-                (DIFFICULTY_PERCENTAGES[difficulty] / 100) * (self.width * self.height)
+                (Constants.DIFFICULTY_PERCENTAGES[difficulty] / 100)
+                * (self.width * self.height)
             )
         else:
             raise ValueError("Invalid difficulty level.")
@@ -66,11 +55,11 @@ class Minesweeper:
         # Initialise pygame
         pygame.init()
         self.screen = pygame.display.set_mode(
-            (self.width * BOX_WIDTH, self.height * BOX_HEIGHT),
+            (self.width * Constants.BOX_WIDTH, self.height * Constants.BOX_HEIGHT),
             pygame.RESIZABLE,
         )
-        pygame.display.set_caption(WINDOW_TITLE)
-        self.font = pygame.font.Font(None, FONT_SIZE)
+        pygame.display.set_caption(Constants.WINDOW_TITLE)
+        self.font = pygame.font.Font(None, Constants.FONT_SIZE)
 
         # Initalise assets
         self._initialise_assets()
@@ -81,43 +70,56 @@ class Minesweeper:
         :returns: None
         """
         self.image_1 = pygame.transform.scale(
-            pygame.image.load("assets/1.png"), (BOX_WIDTH, BOX_HEIGHT)
+            pygame.image.load("assets/1.png"),
+            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
         )
         self.image_2 = pygame.transform.scale(
-            pygame.image.load("assets/2.png"), (BOX_WIDTH, BOX_HEIGHT)
+            pygame.image.load("assets/2.png"),
+            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
         )
         self.image_3 = pygame.transform.scale(
-            pygame.image.load("assets/3.png"), (BOX_WIDTH, BOX_HEIGHT)
+            pygame.image.load("assets/3.png"),
+            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
         )
         self.image_4 = pygame.transform.scale(
-            pygame.image.load("assets/4.png"), (BOX_WIDTH, BOX_HEIGHT)
+            pygame.image.load("assets/4.png"),
+            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
         )
         self.image_5 = pygame.transform.scale(
-            pygame.image.load("assets/5.png"), (BOX_WIDTH, BOX_HEIGHT)
+            pygame.image.load("assets/5.png"),
+            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
         )
         self.image_6 = pygame.transform.scale(
-            pygame.image.load("assets/6.png"), (BOX_WIDTH, BOX_HEIGHT)
+            pygame.image.load("assets/6.png"),
+            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
         )
         self.image_7 = pygame.transform.scale(
-            pygame.image.load("assets/7.png"), (BOX_WIDTH, BOX_HEIGHT)
+            pygame.image.load("assets/7.png"),
+            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
         )
         self.image_8 = pygame.transform.scale(
-            pygame.image.load("assets/8.png"), (BOX_WIDTH, BOX_HEIGHT)
+            pygame.image.load("assets/8.png"),
+            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
         )
         self.image_bomb = pygame.transform.scale(
-            pygame.image.load("assets/bomb.png"), (BOX_WIDTH, BOX_HEIGHT)
+            pygame.image.load("assets/bomb.png"),
+            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
         )
         self.image_flag = pygame.transform.scale(
-            pygame.image.load("assets/flag.png"), (BOX_WIDTH, BOX_HEIGHT)
+            pygame.image.load("assets/flag.png"),
+            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
         )
         self.image_fog_round = pygame.transform.scale(
-            pygame.image.load("assets/fog_rounded.png"), (BOX_WIDTH, BOX_HEIGHT)
+            pygame.image.load("assets/fog_rounded.png"),
+            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
         )
         self.image_fog_sharp = pygame.transform.scale(
-            pygame.image.load("assets/fog_sharp.png"), (BOX_WIDTH, BOX_HEIGHT)
+            pygame.image.load("assets/fog_sharp.png"),
+            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
         )
         self.image_cell = pygame.transform.scale(
-            pygame.image.load("assets/cell.png"), (BOX_WIDTH, BOX_HEIGHT)
+            pygame.image.load("assets/cell.png"),
+            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
         )
 
     def _get_cell_image(
@@ -166,12 +168,14 @@ class Minesweeper:
         """
         value, revealed, flagged = self.grid[row][col]
         final_image = self._get_cell_image(value, revealed, flagged)
-        fading_surface = pygame.Surface((BOX_WIDTH, BOX_HEIGHT))
+        fading_surface = pygame.Surface((Constants.BOX_WIDTH, Constants.BOX_HEIGHT))
         fading_surface.blit(final_image, (0, 0))
 
         for alpha in range(0, 255, 15):
             fading_surface.set_alpha(alpha)
-            self.screen.blit(fading_surface, (col * BOX_WIDTH, row * BOX_HEIGHT))
+            self.screen.blit(
+                fading_surface, (col * Constants.BOX_WIDTH, row * Constants.BOX_HEIGHT)
+            )
             pygame.display.flip()
             sleep(0.001)
 
@@ -183,9 +187,9 @@ class Minesweeper:
         :returns: None
         """
         positions = [
-            (BOX_WIDTH * 0.9, BOX_HEIGHT * 0.9),
-            (BOX_WIDTH, BOX_HEIGHT),
-            (BOX_WIDTH * 0.9, BOX_HEIGHT * 0.9),
+            (Constants.BOX_WIDTH * 0.9, Constants.BOX_HEIGHT * 0.9),
+            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
+            (Constants.BOX_WIDTH * 0.9, Constants.BOX_HEIGHT * 0.9),
         ]
 
         for position in positions:
@@ -196,8 +200,10 @@ class Minesweeper:
             self.screen.blit(
                 image,
                 (
-                    col * BOX_WIDTH + (BOX_WIDTH - position[0]) // 2,
-                    row * BOX_HEIGHT + (BOX_HEIGHT - position[1]) // 2,
+                    col * Constants.BOX_WIDTH
+                    + (Constants.BOX_WIDTH - position[0]) // 2,
+                    row * Constants.BOX_HEIGHT
+                    + (Constants.BOX_HEIGHT - position[1]) // 2,
                 ),
             )
             pygame.display.flip()
@@ -248,12 +254,12 @@ class Minesweeper:
         Displays the Minesweeper grid using pygame.
         :returns: None
         """
-        self.screen.fill(EMPTY_COLOUR)
+        self.screen.fill(Constants.EMPTY_COLOUR)
 
         for row in range(self.height):
             for col in range(self.width):
                 value, revealed, flagged = self.grid[row][col]
-                box_rect = (col * BOX_WIDTH, row * BOX_HEIGHT)
+                box_rect = (col * Constants.BOX_WIDTH, row * Constants.BOX_HEIGHT)
 
                 image = self._get_cell_image(value, revealed, flagged)
 
@@ -264,25 +270,30 @@ class Minesweeper:
         Displays the Minesweeper grid using pygame. (DEPRECATED)
         :returns: None
         """
-        self.screen.fill(EMPTY_COLOUR)
+        self.screen.fill(Constants.EMPTY_COLOUR)
 
         for row in range(self.height):
             for col in range(self.width):
                 value, revealed, flagged = self.grid[row][col]
-                box_rect = (col * BOX_WIDTH, row * BOX_HEIGHT, BOX_WIDTH, BOX_HEIGHT)
+                box_rect = (
+                    col * Constants.BOX_WIDTH,
+                    row * Constants.BOX_HEIGHT,
+                    Constants.BOX_WIDTH,
+                    Constants.BOX_HEIGHT,
+                )
 
                 if revealed:
                     if value == -1:
-                        colour = GAME_OVER_COLOUR
+                        colour = Constants.GAME_OVER_COLOUR
                     elif value > 0:
-                        colour = TEXT_BACKGROUND_COLOUR
+                        colour = Constants.TEXT_BACKGROUND_COLOUR
                     elif value == 0:
-                        colour = EMPTY_COLOUR
+                        colour = Constants.EMPTY_COLOUR
                 elif not revealed:
-                    colour = FOG_COLOUR
+                    colour = Constants.FOG_COLOUR
 
                 if flagged:
-                    colour = TEXT_BACKGROUND_COLOUR
+                    colour = Constants.TEXT_BACKGROUND_COLOUR
 
                 pygame.draw.rect(self.screen, colour, box_rect, 0)
 
@@ -290,34 +301,38 @@ class Minesweeper:
                     if value == -1:
                         pygame.draw.circle(
                             self.screen,
-                            TEXT_COLOUR,
+                            Constants.TEXT_COLOUR,
                             (
-                                col * BOX_WIDTH + BOX_WIDTH // 2,
-                                row * BOX_HEIGHT + BOX_HEIGHT // 2,
+                                col * Constants.BOX_WIDTH + Constants.BOX_WIDTH // 2,
+                                row * Constants.BOX_HEIGHT + Constants.BOX_HEIGHT // 2,
                             ),
-                            BOX_WIDTH // 4,
+                            Constants.BOX_WIDTH // 4,
                         )
                     elif value > 0:
-                        text = self.font.render(str(value), True, TEXT_COLOUR)
+                        text = self.font.render(str(value), True, Constants.TEXT_COLOUR)
                         self.screen.blit(
                             text,
                             (
-                                col * BOX_WIDTH
-                                + BOX_WIDTH // 2
+                                col * Constants.BOX_WIDTH
+                                + Constants.BOX_WIDTH // 2
                                 - text.get_width() // 2,
-                                row * BOX_HEIGHT
-                                + BOX_HEIGHT // 2
+                                row * Constants.BOX_HEIGHT
+                                + Constants.BOX_HEIGHT // 2
                                 - text.get_height() // 2,
                             ),
                         )
 
                 if flagged:
-                    text = self.font.render("F", True, TEXT_COLOUR)
+                    text = self.font.render("F", True, Constants.TEXT_COLOUR)
                     self.screen.blit(
                         text,
                         (
-                            col * BOX_WIDTH + BOX_WIDTH // 2 - text.get_width() // 2,
-                            row * BOX_HEIGHT + BOX_HEIGHT // 2 - text.get_height() // 2,
+                            col * Constants.BOX_WIDTH
+                            + Constants.BOX_WIDTH // 2
+                            - text.get_width() // 2,
+                            row * Constants.BOX_HEIGHT
+                            + Constants.BOX_HEIGHT // 2
+                            - text.get_height() // 2,
                         ),
                     )
 
@@ -376,10 +391,10 @@ class Minesweeper:
         :returns: None
         """
         for i in range(5):
-            self.screen.fill(GAME_OVER_COLOUR)
+            self.screen.fill(Constants.GAME_OVER_COLOUR)
             pygame.display.flip()
             sleep(0.1)
-            self.screen.fill(EMPTY_COLOUR)
+            self.screen.fill(Constants.EMPTY_COLOUR)
             pygame.display.flip()
             sleep(0.1)
 
@@ -390,13 +405,13 @@ class Minesweeper:
         """
         self._show_game_over_animation()
 
-        self.screen.fill(GAME_OVER_COLOUR)
-        text = self.font.render("Game Over!", True, TEXT_COLOUR)
+        self.screen.fill(Constants.GAME_OVER_COLOUR)
+        text = self.font.render("Game Over!", True, Constants.TEXT_COLOUR)
         self.screen.blit(
             text,
             (
-                self.width * BOX_HEIGHT // 2 - text.get_width() // 2,
-                self.height * BOX_WIDTH // 2 - text.get_height() // 2,
+                self.width * Constants.BOX_HEIGHT // 2 - text.get_width() // 2,
+                self.height * Constants.BOX_WIDTH // 2 - text.get_height() // 2,
             ),
         )
 
@@ -497,7 +512,9 @@ class Minesweeper:
             return False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             x, y = pygame.mouse.get_pos()
-            return self._handle_click(y // BOX_HEIGHT, x // BOX_WIDTH, event.button)
+            return self._handle_click(
+                y // Constants.BOX_HEIGHT, x // Constants.BOX_WIDTH, event.button
+            )
         elif event.type == pygame.KEYDOWN:
             return self._handle_key_press(event)
 
@@ -518,8 +535,8 @@ class Minesweeper:
                 self.screen,
                 colour,
                 (
-                    random.randint(0, self.width * BOX_WIDTH),
-                    random.randint(0, self.height * BOX_HEIGHT),
+                    random.randint(0, self.width * Constants.BOX_WIDTH),
+                    random.randint(0, self.height * Constants.BOX_HEIGHT),
                 ),
                 random.randint(10, 50),
             )
@@ -543,23 +560,23 @@ class Minesweeper:
 
         self._show_win_animation()
 
-        self.screen.fill(WIN_COLOUR)
-        text = self.font.render("You win!", True, TEXT_COLOUR)
+        self.screen.fill(Constants.WIN_COLOUR)
+        text = self.font.render("You win!", True, Constants.TEXT_COLOUR)
         self.screen.blit(
             text,
             (
-                self.width * BOX_HEIGHT // 2 - text.get_width() // 2,
-                self.height * BOX_WIDTH // 2 - text.get_height() // 2,
+                self.width * Constants.BOX_HEIGHT // 2 - text.get_width() // 2,
+                self.height * Constants.BOX_WIDTH // 2 - text.get_height() // 2,
             ),
         )
         text = self.font.render(
-            f"Time to complete: {time_to_complete}", True, TEXT_COLOUR
+            f"Time to complete: {time_to_complete}", True, Constants.TEXT_COLOUR
         )
         self.screen.blit(
             text,
             (
-                self.width * BOX_HEIGHT // 2 - text.get_width() // 2,
-                self.height * BOX_WIDTH // 2 + text.get_height(),
+                self.width * Constants.BOX_HEIGHT // 2 - text.get_width() // 2,
+                self.height * Constants.BOX_WIDTH // 2 + text.get_height(),
             ),
         )
 
