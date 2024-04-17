@@ -150,7 +150,7 @@ class Minesweeper:
         ]
 
         for position in positions:
-            temp_image = self.image_flag.copy()
+            temp_image = self.assets["image_flag"].copy()
             image = pygame.transform.scale(
                 temp_image, (int(position[0]), int(position[1]))
             )
