@@ -91,30 +91,30 @@ class Minesweeper:
         """
         if revealed:
             if value == -1:
-                return self.image_bomb
+                return self.assets["image_bomb"]
             elif value == 1:
-                return self.image_1
+                return self.assets["image_1"]
             elif value == 2:
-                return self.image_2
+                return self.assets["image_2"]
             elif value == 3:
-                return self.image_3
+                return self.assets["image_3"]
             elif value == 4:
-                return self.image_4
+                return self.assets["image_4"]
             elif value == 5:
-                return self.image_5
+                return self.assets["image_5"]
             elif value == 6:
-                return self.image_6
+                return self.assets["image_6"]
             elif value == 7:
-                return self.image_7
+                return self.assets["image_7"]
             elif value == 8:
-                return self.image_8
+                return self.assets["image_8"]
             elif value == 0:
-                return self.image_cell
+                return self.assets["image_cell"]
         elif not revealed:
             if flagged:
-                return self.image_flag
+                return self.assets["image_flag"]
             else:
-                return self.image_fog_sharp
+                return self.assets["image_fog_sharp"]
 
     def _animate_reveal(self, row: int, col: int) -> None:
         """
