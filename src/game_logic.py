@@ -228,7 +228,7 @@ class Minesweeper:
                 cell = self.grid[row][col]
                 if cell.value == -1:
                     continue
-                self.value = self._count_adjacent_bombs(row, col)
+                cell.value = self._count_adjacent_bombs(row, col)
 
         return self.grid
 
