@@ -59,6 +59,82 @@ class Cell:
             self.flagged = not self.flagged
 
 
+class Grid:
+    """The Minesweeper grid."""
+
+    def __init__(self, width: int, height: int) -> None:
+        """
+        Initialises the grid.
+        :param width: The width of the grid.
+        :param height: The height of the grid.
+        :returns: None
+        """
+        self.width = width
+        self.height = height
+        self.grid = [[Cell() for _ in range(self.width)] for _ in range(self.height)]
+
+    def __str__(self) -> str:
+        """
+        Returns the string representation of the grid.
+        :returns: The string representation of the grid.
+        """
+        return f"Grid(width={self.width}, height={self.height}, grid={self.grid})"
+
+    def __repr__(self) -> str:
+        """
+        Returns the string representation of the grid.
+        :returns: The string representation of the grid.
+        """
+        return self.__str__()
+
+    def get_cell(self, row: int, col: int) -> Cell:
+        """
+        Retrieves a cell from the grid.
+        :param row: The row of the cell.
+        :param col: The column of the cell.
+        :returns: The cell object.
+        """
+        return self.grid[row][col]
+
+    def _count_adjacent_bombs(self, row: int, col: int) -> int:
+        """
+        Counts the number of adjacent bombs to a cell.
+        :param row: The row of the cell.
+        :param col: The column of the cell.
+        :returns: The number of adjacent bombs.
+        """
+        count = 0
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                if 0 <= row + i < self.height and 0 <= col + j < self.width:
+                    adj_cell = self.get_cell(row + i, col + j)
+                    if adj_cell.value == -1:
+                        count += 1
+
+        return count
+
+    def generate(self, num_bombs: int) -> List[List[str]]:
+        """
+        Generates a Minesweeper grid.
+        :param num_bombs: The number of bombs in the grid.
+        :returns: A 2D list representing the grid.
+        """
+        # Generate bombs
+        bomb_positions = random.sample(range(self.width * self.height), num_bombs)
+        for position in bomb_positions:
+            row, col = divmod(position, self.width)
+            cell = self.get_cell(row, col)
+            cell.value = -1
+
+        # Generate numbers
+        for row in range(self.height):
+            for col in range(self.width):
+                cell = self.get_cell(row, col)
+                if cell.value == -1:
+                    continue
+                cell.value = self._count_adjacent_bombs(row, col)
+
+
 class Minesweeper:
     """The Minesweeper game class."""
 
@@ -77,16 +153,14 @@ class Minesweeper:
         self.logger = logger
 
         # Initialise the grid
-        self.width = width
-        self.height = height
-        self.grid = [[Cell() for _ in range(self.width)] for _ in range(self.height)]
+        self.grid = Grid(width, height)
 
         # Initialise the number of bombs
         self.difficulty = difficulty
         if difficulty in Constants.DIFFICULTY_PERCENTAGES:
             self.num_bombs = int(
                 (Constants.DIFFICULTY_PERCENTAGES[difficulty] / 100)
-                * (self.width * self.height)
+                * (self.grid.width * self.grid.height)
             )
         else:
             raise ValueError("Invalid difficulty level.")
@@ -100,7 +174,10 @@ class Minesweeper:
         # Initialise pygame
         pygame.init()
         self.screen = pygame.display.set_mode(
-            (self.width * Constants.BOX_WIDTH, self.height * Constants.BOX_HEIGHT),
+            (
+                self.grid.width * Constants.BOX_WIDTH,
+                self.grid.height * Constants.BOX_HEIGHT,
+            ),
             pygame.RESIZABLE,
         )
         pygame.display.set_caption(Constants.WINDOW_TITLE)
@@ -150,7 +227,7 @@ class Minesweeper:
         :param col: The column of the cell.
         :returns: None
         """
-        cell = self.grid[row][col]
+        cell = self.grid.get_cell(row, col)
         final_image = self._get_cell_image(cell)
         fading_surface = pygame.Surface((Constants.BOX_WIDTH, Constants.BOX_HEIGHT))
         fading_surface.blit(final_image, (0, 0))
@@ -193,45 +270,6 @@ class Minesweeper:
             pygame.display.flip()
             sleep(0.1)
 
-    def _count_adjacent_bombs(self, row: int, col: int) -> int:
-        """
-        Counts the number of adjacent bombs to a cell.
-        :param row: The row of the cell.
-        :param col: The column of the cell.
-        :returns: The number of adjacent bombs.
-        """
-        count = 0
-        for i in range(-1, 2):
-            for j in range(-1, 2):
-                if 0 <= row + i < self.height and 0 <= col + j < self.width:
-                    adj_cell = self.grid[row + i][col + j]
-                    if adj_cell.value == -1:
-                        count += 1
-
-        return count
-
-    def _generate_grid(self) -> List[List[str]]:
-        """
-        Generates a Minesweeper grid.
-        :returns: A 2D list representing the grid.
-        """
-        # Generate bombs
-        bomb_positions = random.sample(range(self.width * self.height), self.num_bombs)
-        for position in bomb_positions:
-            row, col = divmod(position, self.width)
-            cell = self.grid[row][col]
-            cell.value = -1
-
-        # Generate numbers
-        for row in range(self.height):
-            for col in range(self.width):
-                cell = self.grid[row][col]
-                if cell.value == -1:
-                    continue
-                cell.value = self._count_adjacent_bombs(row, col)
-
-        return self.grid
-
     def _display_grid(self) -> None:
         """
         Displays the Minesweeper grid using pygame.
@@ -239,87 +277,14 @@ class Minesweeper:
         """
         self.screen.fill(Constants.EMPTY_COLOUR)
 
-        for row in range(self.height):
-            for col in range(self.width):
-                cell = self.grid[row][col]
+        for row in range(self.grid.height):
+            for col in range(self.grid.width):
+                cell = self.grid.get_cell(row, col)
                 box_rect = (col * Constants.BOX_WIDTH, row * Constants.BOX_HEIGHT)
 
                 image = self._get_cell_image(cell)
 
                 self.screen.blit(image, box_rect)
-
-    def _display_basic_grid(self) -> None:
-        """
-        Displays the Minesweeper grid using pygame. (DEPRECATED)
-        :returns: None
-        """
-        self.screen.fill(Constants.EMPTY_COLOUR)
-
-        for row in range(self.height):
-            for col in range(self.width):
-                cell = self.grid[row][col]
-                box_rect = (
-                    col * Constants.BOX_WIDTH,
-                    row * Constants.BOX_HEIGHT,
-                    Constants.BOX_WIDTH,
-                    Constants.BOX_HEIGHT,
-                )
-
-                if cell.revealed:
-                    if cell.value == -1:
-                        colour = Constants.GAME_OVER_COLOUR
-                    elif cell.value > 0:
-                        colour = Constants.TEXT_BACKGROUND_COLOUR
-                    elif cell.value == 0:
-                        colour = Constants.EMPTY_COLOUR
-                elif not cell.revealed:
-                    colour = Constants.FOG_COLOUR
-
-                if cell.flagged:
-                    colour = Constants.TEXT_BACKGROUND_COLOUR
-
-                pygame.draw.rect(self.screen, colour, box_rect, 0)
-
-                if cell.revealed:
-                    if cell.value == -1:
-                        pygame.draw.circle(
-                            self.screen,
-                            Constants.TEXT_COLOUR,
-                            (
-                                col * Constants.BOX_WIDTH + Constants.BOX_WIDTH // 2,
-                                row * Constants.BOX_HEIGHT + Constants.BOX_HEIGHT // 2,
-                            ),
-                            Constants.BOX_WIDTH // 4,
-                        )
-                    elif cell.value > 0:
-                        text = self.font.render(
-                            str(cell.value), True, Constants.TEXT_COLOUR
-                        )
-                        self.screen.blit(
-                            text,
-                            (
-                                col * Constants.BOX_WIDTH
-                                + Constants.BOX_WIDTH // 2
-                                - text.get_width() // 2,
-                                row * Constants.BOX_HEIGHT
-                                + Constants.BOX_HEIGHT // 2
-                                - text.get_height() // 2,
-                            ),
-                        )
-
-                if cell.flagged:
-                    text = self.font.render("F", True, Constants.TEXT_COLOUR)
-                    self.screen.blit(
-                        text,
-                        (
-                            col * Constants.BOX_WIDTH
-                            + Constants.BOX_WIDTH // 2
-                            - text.get_width() // 2,
-                            row * Constants.BOX_HEIGHT
-                            + Constants.BOX_HEIGHT // 2
-                            - text.get_height() // 2,
-                        ),
-                    )
 
     def _reveal_cell(self, start_row: int, start_col: int) -> None:
         """
@@ -338,11 +303,11 @@ class Minesweeper:
             distance, row, col = heappop(priority_queue)
 
             # Ensure the cell indices are within grid boundaries
-            if row < 0 or row >= self.height or col < 0 or col >= self.width:
+            if row < 0 or row >= self.grid.height or col < 0 or col >= self.grid.width:
                 continue
 
             # Retrieve the cell value and revealed status
-            cell = self.grid[row][col]
+            cell = self.grid.get_cell(row, col)
 
             # Stop if the cell is already revealed or flagged
             if cell.revealed or cell.flagged:
@@ -395,8 +360,8 @@ class Minesweeper:
         self.screen.blit(
             text,
             (
-                self.width * Constants.BOX_HEIGHT // 2 - text.get_width() // 2,
-                self.height * Constants.BOX_WIDTH // 2 - text.get_height() // 2,
+                self.grid.width * Constants.BOX_HEIGHT // 2 - text.get_width() // 2,
+                self.grid.height * Constants.BOX_WIDTH // 2 - text.get_height() // 2,
             ),
         )
 
@@ -407,7 +372,7 @@ class Minesweeper:
         :param col: The column of the cell.
         :returns: None
         """
-        cell = self.grid[row][col]
+        cell = self.grid.get_cell(row, col)
 
         if not cell.revealed:
             cell.flag()
@@ -421,7 +386,7 @@ class Minesweeper:
         :param button: The mouse button clicked.
         :returns: True if the game is still running, False otherwise.
         """
-        cell = self.grid[row][col]
+        cell = self.grid.get_cell(row, col)
 
         if button == 1:
             if cell.value == -1 and not cell.flagged:
@@ -447,8 +412,8 @@ class Minesweeper:
         Reinitialises the game.
         :returns: None
         """
-        self.__init__(self.width, self.height, self.difficulty)
-        self._generate_grid()
+        self.__init__(self.grid.width, self.grid.height, self.difficulty)
+        self.grid.generate()
 
     def _handle_key_press(self, event) -> bool:
         """
@@ -472,19 +437,19 @@ class Minesweeper:
             self._reinitalise_game()
             return True
         elif event.key == pygame.K_EQUALS:
-            self.width += 1
-            self.height += 1
+            self.grid.width += 1
+            self.grid.height += 1
             self._reinitalise_game()
             return True
         elif event.key == pygame.K_MINUS:
-            self.width -= 1
-            self.height -= 1
+            self.grid.width -= 1
+            self.grid.height -= 1
             self._reinitalise_game()
             return True
         elif event.key == pygame.K_TAB:
-            for row in range(self.height):
-                for col in range(self.width):
-                    cell = self.grid[row][col]
+            for row in range(self.grid.height):
+                for col in range(self.grid.width):
+                    cell = self.grid.get_cell(row, col)
                     cell.reveal()
             return True
 
@@ -523,8 +488,8 @@ class Minesweeper:
                 self.screen,
                 colour,
                 (
-                    random.randint(0, self.width * Constants.BOX_WIDTH),
-                    random.randint(0, self.height * Constants.BOX_HEIGHT),
+                    random.randint(0, self.grid.width * Constants.BOX_WIDTH),
+                    random.randint(0, self.grid.height * Constants.BOX_HEIGHT),
                 ),
                 random.randint(10, 50),
             )
@@ -553,8 +518,8 @@ class Minesweeper:
         self.screen.blit(
             text,
             (
-                self.width * Constants.BOX_HEIGHT // 2 - text.get_width() // 2,
-                self.height * Constants.BOX_WIDTH // 2 - text.get_height() // 2,
+                self.grid.width * Constants.BOX_HEIGHT // 2 - text.get_width() // 2,
+                self.grid.height * Constants.BOX_WIDTH // 2 - text.get_height() // 2,
             ),
         )
         text = self.font.render(
@@ -563,8 +528,8 @@ class Minesweeper:
         self.screen.blit(
             text,
             (
-                self.width * Constants.BOX_HEIGHT // 2 - text.get_width() // 2,
-                self.height * Constants.BOX_WIDTH // 2 + text.get_height(),
+                self.grid.width * Constants.BOX_HEIGHT // 2 - text.get_width() // 2,
+                self.grid.height * Constants.BOX_WIDTH // 2 + text.get_height(),
             ),
         )
 
@@ -573,13 +538,16 @@ class Minesweeper:
         Plays the Minesweeper game.
         :returns: None
         """
-        self._generate_grid()
+        self.grid.generate(self.num_bombs)
 
         running = True
         while running:
             self._display_grid()
 
-            if self.revealed_count == self.width * self.height - self.num_bombs:
+            if (
+                self.revealed_count
+                == self.grid.width * self.grid.height - self.num_bombs
+            ):
                 running = self._show_win_screen()
 
             for event in pygame.event.get():
