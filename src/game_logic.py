@@ -204,7 +204,8 @@ class Minesweeper:
         for i in range(-1, 2):
             for j in range(-1, 2):
                 if 0 <= row + i < self.height and 0 <= col + j < self.width:
-                    if self.grid[row + i][col + j][0] == -1:
+                    adj_cell = self.grid[row + i][col + j]
+                    if adj_cell.value == -1:
                         count += 1
 
         return count
