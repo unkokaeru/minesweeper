@@ -1,6 +1,7 @@
 """A simple Minesweeper program"""
 
 from src.game_logic import Minesweeper
+from src.log_manager import get_logger
 
 """
 TODO:
@@ -20,7 +21,11 @@ def main() -> None:
     A simple Minesweeper program.
     :returns: None
     """
-    minesweeper = Minesweeper(10, 10, "easy")  # 10x10 grid, easy difficulty - default
+    logger = get_logger()
+
+    minesweeper = Minesweeper(
+        logger, 10, 10, "easy"
+    )  # 10x10 grid, easy difficulty - default
 
     minesweeper.play_game()
 
@@ -29,4 +34,4 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\nExiting...")
+        get_logger.info("Program terminated by user.")

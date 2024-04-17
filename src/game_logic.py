@@ -3,6 +3,7 @@
 import math
 import random
 from heapq import heappop, heappush
+from logging import Logger
 from time import sleep, time
 from typing import List
 
@@ -26,14 +27,20 @@ from cfg.constants import (
 class Minesweeper:
     """The Minesweeper game class."""
 
-    def __init__(self, width: int, height: int, difficulty: str) -> None:
+    def __init__(
+        self, logger: Logger, width: int, height: int, difficulty: str
+    ) -> None:
         """
         Initialises the Minesweeper game.
+        :param logger: The logger object.
         :param width: The width of the grid.
         :param height: The height of the grid.
         :param difficulty: The difficulty of the game.
         :returns: None
         """
+        # Initialise the logger
+        self.logger = logger
+
         # Initialise the grid
         self.width = width
         self.height = height
@@ -574,7 +581,7 @@ class Minesweeper:
                 try:
                     running = self._handle_event(event)
                 except Exception as e:  # Temporary fix
-                    print(e)
+                    self.logger.exception(e)
                     running = True
 
             pygame.display.flip()
