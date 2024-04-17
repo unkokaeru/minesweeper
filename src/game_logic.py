@@ -218,18 +218,16 @@ class Minesweeper:
         bomb_positions = random.sample(range(self.width * self.height), self.num_bombs)
         for position in bomb_positions:
             row, col = divmod(position, self.width)
-            self.grid[row][col] = (-1, False, False)
+            cell = self.grid[row][col]
+            cell.value = -1
 
         # Generate numbers
         for row in range(self.height):
             for col in range(self.width):
-                if self.grid[row][col][0] == -1:
+                cell = self.grid[row][col]
+                if cell.value == -1:
                     continue
-                self.grid[row][col] = (
-                    self._count_adjacent_bombs(row, col),
-                    False,
-                    False,
-                )
+                self.value = self._count_adjacent_bombs(row, col)
 
         return self.grid
 
@@ -258,7 +256,7 @@ class Minesweeper:
 
         for row in range(self.height):
             for col in range(self.width):
-                value, revealed, flagged = self.grid[row][col]
+                cell = self.grid[row][col]
                 box_rect = (
                     col * Constants.BOX_WIDTH,
                     row * Constants.BOX_HEIGHT,
@@ -266,23 +264,23 @@ class Minesweeper:
                     Constants.BOX_HEIGHT,
                 )
 
-                if revealed:
-                    if value == -1:
+                if cell.revealed:
+                    if cell.value == -1:
                         colour = Constants.GAME_OVER_COLOUR
-                    elif value > 0:
+                    elif cell.value > 0:
                         colour = Constants.TEXT_BACKGROUND_COLOUR
-                    elif value == 0:
+                    elif cell.value == 0:
                         colour = Constants.EMPTY_COLOUR
-                elif not revealed:
+                elif not cell.revealed:
                     colour = Constants.FOG_COLOUR
 
-                if flagged:
+                if cell.flagged:
                     colour = Constants.TEXT_BACKGROUND_COLOUR
 
                 pygame.draw.rect(self.screen, colour, box_rect, 0)
 
-                if revealed:
-                    if value == -1:
+                if cell.revealed:
+                    if cell.value == -1:
                         pygame.draw.circle(
                             self.screen,
                             Constants.TEXT_COLOUR,
@@ -292,8 +290,10 @@ class Minesweeper:
                             ),
                             Constants.BOX_WIDTH // 4,
                         )
-                    elif value > 0:
-                        text = self.font.render(str(value), True, Constants.TEXT_COLOUR)
+                    elif cell.value > 0:
+                        text = self.font.render(
+                            str(cell.value), True, Constants.TEXT_COLOUR
+                        )
                         self.screen.blit(
                             text,
                             (
@@ -306,7 +306,7 @@ class Minesweeper:
                             ),
                         )
 
-                if flagged:
+                if cell.flagged:
                     text = self.font.render("F", True, Constants.TEXT_COLOUR)
                     self.screen.blit(
                         text,
@@ -409,7 +409,7 @@ class Minesweeper:
         cell = self.grid[row][col]
 
         if not cell.revealed:
-            self.grid[row][col] = (cell.value, cell.revealed, not cell.flagged)
+            cell.flag()
             self._animate_flag(row, col)
 
     def _handle_click(self, row: int, col: int, button: int) -> bool:
@@ -420,15 +420,17 @@ class Minesweeper:
         :param button: The mouse button clicked.
         :returns: True if the game is still running, False otherwise.
         """
+        cell = self.grid[row][col]
+
         if button == 1:
-            if self.grid[row][col][0] == -1 and not self.grid[row][col][2]:
+            if cell.value == -1 and not cell.flagged:
                 self._reveal_cell(row, col)
                 self._display_grid()
                 pygame.display.flip()
                 sleep(1)
                 self._show_game_over()
                 return False
-            elif self.grid[row][col][0] == -1 and self.grid[row][col][2]:
+            elif cell.value == -1 and cell.flagged:
                 return True
             else:
                 self._reveal_cell(row, col)
@@ -481,7 +483,8 @@ class Minesweeper:
         elif event.key == pygame.K_TAB:
             for row in range(self.height):
                 for col in range(self.width):
-                    self.grid[row][col] = (self.grid[row][col][0], True, False)
+                    cell = self.grid[row][col]
+                    cell.reveal()
             return True
 
         return True
