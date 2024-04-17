@@ -12,6 +12,53 @@ import pygame
 from cfg.constants import Constants
 
 
+class Cell:
+    """A cell in the Minesweeper grid."""
+
+    def __init__(
+        self, value: int = 0, revealed: bool = False, flagged: bool = False
+    ) -> None:
+        """
+        Initialises the cell.
+        :param value: The value of the cell, -1 represents a bomb, 0 represents no bombs, 1-8 represent the number of adjacent bombs.
+        :param revealed: The revealed status of the cell.
+        :param flagged: The flagged status of the cell.
+        :returns: None
+        """
+        self.value = value
+        self.revealed = revealed
+        self.flagged = flagged
+
+    def __str__(self) -> str:
+        """
+        Returns the string representation of the cell.
+        :returns: The string representation of the cell.
+        """
+        return f"Cell(value={self.value}, revealed={self.revealed}, flagged={self.flagged})"
+
+    def __repr__(self) -> str:
+        """
+        Returns the string representation of the cell.
+        :returns: The string representation of the cell.
+        """
+        return self.__str__()
+
+    def reveal(self) -> None:
+        """
+        Reveals the cell.
+        :returns: None
+        """
+        self.revealed = True
+
+    def flag(self) -> None:
+        """
+        Flags the cell.
+        :returns: None
+        """
+        if not self.revealed:
+            self.flagged = not self.flagged
+
+
 class Minesweeper:
     """The Minesweeper game class."""
 
@@ -32,9 +79,7 @@ class Minesweeper:
         # Initialise the grid
         self.width = width
         self.height = height
-        self.grid = [
-            [(0, False, False) for _ in range(self.width)] for _ in range(self.height)
-        ]  # -1 represents a bomb, 0 represents no bombs, 1-8 represent the number of adjacent bombs
+        self.grid = [[Cell() for _ in range(self.width)] for _ in range(self.height)]
 
         # Initialise the number of bombs
         self.difficulty = difficulty
@@ -79,39 +124,21 @@ class Minesweeper:
             except FileNotFoundError as e:
                 self.logger.exception(f"Failed to load {path}: {e}")
 
-    def _get_cell_image(
-        self, value: int, revealed: bool, flagged: bool
-    ) -> pygame.Surface:
+    def _get_cell_image(self, cell: Cell) -> pygame.Surface:
         """
         Retrieves the image of a cell in the Minesweeper grid.
-        :param value: The value of the cell.
-        :param revealed: The revealed status of the cell.
-        :param flagged: The flagged status of the cell.
+        :param cell: The cell object.
         :returns: The image of the cell.
         """
-        if revealed:
-            if value == -1:
+        if cell.revealed:
+            if cell.value == -1:
                 return self.assets["image_bomb"]
-            elif value == 1:
-                return self.assets["image_1"]
-            elif value == 2:
-                return self.assets["image_2"]
-            elif value == 3:
-                return self.assets["image_3"]
-            elif value == 4:
-                return self.assets["image_4"]
-            elif value == 5:
-                return self.assets["image_5"]
-            elif value == 6:
-                return self.assets["image_6"]
-            elif value == 7:
-                return self.assets["image_7"]
-            elif value == 8:
-                return self.assets["image_8"]
-            elif value == 0:
+            elif cell.value == 0:
                 return self.assets["image_cell"]
-        elif not revealed:
-            if flagged:
+            else:
+                return self.assets[f"image_{cell.value}"]
+        elif not cell.revealed:
+            if cell.flagged:
                 return self.assets["image_flag"]
             else:
                 return self.assets["image_fog_sharp"]
@@ -123,8 +150,8 @@ class Minesweeper:
         :param col: The column of the cell.
         :returns: None
         """
-        value, revealed, flagged = self.grid[row][col]
-        final_image = self._get_cell_image(value, revealed, flagged)
+        cell = self.grid[row][col]
+        final_image = self._get_cell_image(cell)
         fading_surface = pygame.Surface((Constants.BOX_WIDTH, Constants.BOX_HEIGHT))
         fading_surface.blit(final_image, (0, 0))
 
@@ -215,10 +242,10 @@ class Minesweeper:
 
         for row in range(self.height):
             for col in range(self.width):
-                value, revealed, flagged = self.grid[row][col]
+                cell = self.grid[row][col]
                 box_rect = (col * Constants.BOX_WIDTH, row * Constants.BOX_HEIGHT)
 
-                image = self._get_cell_image(value, revealed, flagged)
+                image = self._get_cell_image(cell)
 
                 self.screen.blit(image, box_rect)
 
@@ -314,19 +341,19 @@ class Minesweeper:
                 continue
 
             # Retrieve the cell value and revealed status
-            value, revealed_status, flagged = self.grid[row][col]
+            cell = self.grid[row][col]
 
             # Stop if the cell is already revealed or flagged
-            if revealed_status or flagged:
+            if cell.revealed or cell.flagged:
                 continue
 
             # Mark the cell as revealed
-            self.grid[row][col] = (value, True, False)
+            cell.reveal()
             self._animate_reveal(row, col)
             self.revealed_count += 1
 
             # If the cell is a bomb or has adjacent bombs, stop further revealing
-            if value != 0:
+            if cell.value != 0:
                 continue
 
             # Add all adjacent cells to the queue, prioritized by their distance from the click
@@ -379,10 +406,10 @@ class Minesweeper:
         :param col: The column of the cell.
         :returns: None
         """
-        value, revealed, flagged = self.grid[row][col]
+        cell = self.grid[row][col]
 
-        if not revealed:
-            self.grid[row][col] = (value, revealed, not flagged)
+        if not cell.revealed:
+            self.grid[row][col] = (cell.value, cell.revealed, not cell.flagged)
             self._animate_flag(row, col)
 
     def _handle_click(self, row: int, col: int, button: int) -> bool:
