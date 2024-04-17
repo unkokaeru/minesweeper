@@ -32,3 +32,20 @@ class Constants:
             "hard": 20,
             "expert": 25,
         }
+
+        # Asset paths
+        self.ASSET_PATHS = {
+            "image_1": "assets/1.png",
+            "image_2": "assets/2.png",
+            "image_3": "assets/3.png",
+            "image_4": "assets/4.png",
+            "image_5": "assets/5.png",
+            "image_6": "assets/6.png",
+            "image_7": "assets/7.png",
+            "image_8": "assets/8.png",
+            "image_bomb": "assets/bomb.png",
+            "image_flag": "assets/flag.png",
+            "image_fog_round": "assets/fog_rounded.png",
+            "image_fog_sharp": "assets/fog_sharp.png",
+            "image_cell": "assets/cell.png",
+        }

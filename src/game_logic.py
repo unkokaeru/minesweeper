@@ -62,6 +62,7 @@ class Minesweeper:
         self.font = pygame.font.Font(None, Constants.FONT_SIZE)
 
         # Initalise assets
+        self.assets = {}
         self._initialise_assets()
 
     def _initialise_assets(self) -> None:
@@ -69,58 +70,14 @@ class Minesweeper:
         Initialises the assets for the Minesweeper game.
         :returns: None
         """
-        self.image_1 = pygame.transform.scale(
-            pygame.image.load("assets/1.png"),
-            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
-        )
-        self.image_2 = pygame.transform.scale(
-            pygame.image.load("assets/2.png"),
-            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
-        )
-        self.image_3 = pygame.transform.scale(
-            pygame.image.load("assets/3.png"),
-            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
-        )
-        self.image_4 = pygame.transform.scale(
-            pygame.image.load("assets/4.png"),
-            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
-        )
-        self.image_5 = pygame.transform.scale(
-            pygame.image.load("assets/5.png"),
-            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
-        )
-        self.image_6 = pygame.transform.scale(
-            pygame.image.load("assets/6.png"),
-            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
-        )
-        self.image_7 = pygame.transform.scale(
-            pygame.image.load("assets/7.png"),
-            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
-        )
-        self.image_8 = pygame.transform.scale(
-            pygame.image.load("assets/8.png"),
-            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
-        )
-        self.image_bomb = pygame.transform.scale(
-            pygame.image.load("assets/bomb.png"),
-            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
-        )
-        self.image_flag = pygame.transform.scale(
-            pygame.image.load("assets/flag.png"),
-            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
-        )
-        self.image_fog_round = pygame.transform.scale(
-            pygame.image.load("assets/fog_rounded.png"),
-            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
-        )
-        self.image_fog_sharp = pygame.transform.scale(
-            pygame.image.load("assets/fog_sharp.png"),
-            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
-        )
-        self.image_cell = pygame.transform.scale(
-            pygame.image.load("assets/cell.png"),
-            (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
-        )
+        for name, path in Constants.ASSET_PATHS.items():
+            try:
+                self.assets[name] = pygame.transform.scale(
+                    pygame.image.load(path),
+                    (Constants.BOX_WIDTH, Constants.BOX_HEIGHT),
+                )
+            except FileNotFoundError as e:
+                self.logger.exception(f"Failed to load {path}: {e}")
 
     def _get_cell_image(
         self, value: int, revealed: bool, flagged: bool
