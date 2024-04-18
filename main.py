@@ -13,6 +13,7 @@ TODO:
 - Sound Effects - bomb explosion, flag placement, etc.
 - Background Music - self-produced
 - Interactive Tutorial - how to play Minesweeper
+- Recreate the README.md - how to run the game, how to play Minesweeper
 """
 
 
