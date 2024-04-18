@@ -2,7 +2,6 @@
 
 import random
 from logging import Logger
-from typing import List
 
 import pygame
 
@@ -13,11 +12,14 @@ from src.models.cell import Cell
 class Grid:
     """The Minesweeper grid."""
 
-    def __init__(self, logger: Logger, width: int, height: int) -> None:
+    def __init__(
+        self, logger: Logger, width: int, height: int, difficulty: str
+    ) -> None:
         """
         Initialises the grid.
         :param width: The width of the grid.
         :param height: The height of the grid.
+        :param difficulty: The difficulty of the game.
         :returns: None
         """
         self.logger = logger
@@ -25,10 +27,12 @@ class Grid:
         self.width = width
         self.height = height
         self.grid = [[Cell() for _ in range(self.width)] for _ in range(self.height)]
+        self.difficulty = difficulty
         self.revealed_count = 0
 
         self.assets = {}
         self._initialise_assets()
+        self._init_bomb_num()
 
     def __str__(self) -> str:
         """
@@ -57,6 +61,19 @@ class Grid:
                 )
             except FileNotFoundError as e:
                 self.logger.exception(f"Failed to load {path}: {e}")
+
+    def _init_bomb_num(self) -> None:
+        """
+        Initialises the number of bombs based on the difficulty level.
+        :returns: None
+        """
+        if self.difficulty in Constants.DIFFICULTY_PERCENTAGES:
+            self.num_bombs = int(
+                (Constants.DIFFICULTY_PERCENTAGES[self.difficulty] / 100)
+                * (self.width * self.height)
+            )
+        else:
+            raise ValueError("Invalid difficulty level.")
 
     def _count_adjacent_bombs(self, row: int, col: int) -> int:
         """
@@ -103,14 +120,13 @@ class Grid:
         """
         return self.grid[row][col]
 
-    def generate(self, num_bombs: int) -> List[List[str]]:
+    def generate(self) -> int:
         """
         Generates a Minesweeper grid.
-        :param num_bombs: The number of bombs in the grid.
-        :returns: A 2D list representing the grid.
+        :returns: The number of bombs in the grid.
         """
         # Generate bombs
-        bomb_positions = random.sample(range(self.width * self.height), num_bombs)
+        bomb_positions = random.sample(range(self.width * self.height), self.num_bombs)
         for position in bomb_positions:
             row, col = divmod(position, self.width)
             cell = self.get_cell(row, col)
@@ -123,3 +139,5 @@ class Grid:
                 if cell.value == -1:
                     continue
                 cell.value = self._count_adjacent_bombs(row, col)
+
+        return self.num_bombs

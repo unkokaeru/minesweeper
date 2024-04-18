@@ -58,7 +58,7 @@ class MouseEventHandler:
 class KeyEventHandler:
     """The key event handler for the Minesweeper game."""
 
-    def __init__(self, grid: Grid, game_logic: GameLogic) -> None:
+    def __init__(self, grid: Grid) -> None:
         """
         Initialises the key event handler.
         :param grid: The Minesweeper grid object.
@@ -66,7 +66,6 @@ class KeyEventHandler:
         :returns: None
         """
         self.grid = grid
-        self.game_logic = game_logic
 
     def key_press(self, event) -> bool:
         """
@@ -83,7 +82,7 @@ class KeyEventHandler:
         }
 
         if event.key in DIFFICULTY_MAP:
-            self.difficulty = DIFFICULTY_MAP[event.key]
+            self.grid.difficulty = DIFFICULTY_MAP[event.key]
             return True
         elif event.key == pygame.K_r:
             return True

@@ -29,4 +29,4 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        get_logger.info("Program terminated by user.")
+        print("Program terminated by user.")

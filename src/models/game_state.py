@@ -34,12 +34,10 @@ class GameState:
         self.logger = logger
         self.width = width
         self.height = height
-        self.difficulty = difficulty
-        self.grid = Grid(logger, width, height)
+        self.grid = Grid(logger, width, height, difficulty)
 
-        self._init_bomb_num()
         self._init_pygame()
-        self.grid.generate(self.num_bombs)
+        self.num_bombs = self.grid.generate()
         self.animation_handler = AnimationHandler(
             self.grid, self.screen, self.grid.assets
         )
@@ -52,22 +50,9 @@ class GameState:
         self.mouse_event_handler = MouseEventHandler(
             self.grid, self.game_logic, self.screen_manager
         )
-        self.key_event_handler = KeyEventHandler(self.grid, self.game_logic)
+        self.key_event_handler = KeyEventHandler(self.grid)
 
         self.start_time = time()
-
-    def _init_bomb_num(self) -> None:
-        """
-        Initialises the number of bombs based on the difficulty level.
-        :returns: None
-        """
-        if self.difficulty in Constants.DIFFICULTY_PERCENTAGES:
-            self.num_bombs = int(
-                (Constants.DIFFICULTY_PERCENTAGES[self.difficulty] / 100)
-                * (self.grid.width * self.grid.height)
-            )
-        else:
-            raise ValueError("Invalid difficulty level.")
 
     def _init_pygame(self) -> None:
         """
@@ -89,7 +74,9 @@ class GameState:
         Reinitialises the game.
         :returns: None
         """
-        self.__init__(self.logger, self.grid.width, self.grid.height, self.difficulty)
+        self.__init__(
+            self.logger, self.grid.width, self.grid.height, self.grid.difficulty
+        )
 
     def _handle_event(self, event) -> bool:
         """
