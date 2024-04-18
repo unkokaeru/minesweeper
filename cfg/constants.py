@@ -1,4 +1,4 @@
-"""Contains the constants for Minesweeper."""
+"""constants.py: Contains the constants for Minesweeper."""
 
 
 class Constants:

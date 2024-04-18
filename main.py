@@ -1,7 +1,7 @@
-"""A simple Minesweeper program"""
+"""main.py: Contains the main function for Minesweeper."""
 
-from src.game_logic import Minesweeper
-from src.log_manager import get_logger
+from src.logging.log_manager import get_logger
+from src.models.game_state import GameState
 
 """
 TODO:
@@ -17,17 +17,12 @@ TODO:
 
 
 def main() -> None:
-    """
-    A simple Minesweeper program.
-    :returns: None
-    """
+    """A simple Minesweeper program."""
     logger = get_logger()
 
-    minesweeper = Minesweeper(
-        logger, 10, 10, "easy"
-    )  # 10x10 grid, easy difficulty - default
+    minesweeper = GameState(logger)
 
-    minesweeper.play_game()
+    minesweeper.play()
 
 
 if __name__ == "__main__":
